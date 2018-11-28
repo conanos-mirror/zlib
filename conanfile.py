@@ -19,7 +19,7 @@ class ZlibConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]    }
     default_options = "shared=False"
-    exports_sources = ["CMakeLists.txt"]
+    exports_sources = ["CMakeLists.txt",'cmake/*']
     url = "http://github.com/conanos/zlib"
     license = "Zlib"
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " \
@@ -30,6 +30,8 @@ class ZlibConan(ConanFile):
             return self.settings.compiler == 'emcc'
         except:
             return False
+    def is_msvc(self):
+        return self.settings.compiler == 'Visual Studio'
 
     def config_options(self):
         if self.is_emscripten():
@@ -53,7 +55,20 @@ class ZlibConan(ConanFile):
         if not tools.os_info.is_windows:
             self.run("chmod +x ./%s/configure" % self.ZIP_FOLDER_NAME)
 
+    def msvc_build(self):
+        shutil.copy('cmake/CMakeLists.txt',os.path.join(self.ZIP_FOLDER_NAME))
+        shutil.copy('cmake/zlib.pc.cmakein',os.path.join(self.ZIP_FOLDER_NAME))
+        cmake = CMake(self)
+        cmake.configure(build_folder="~build")
+        cmake.build()
+        cmake.install()
+
+
+
     def build(self):
+        if self.is_msvc:
+            self.msvc_build()
+            return
         with tools.chdir(os.path.join(self.source_folder, self.ZIP_FOLDER_NAME)):
             for filename in ['zconf.h', 'zconf.h.cmakein', 'zconf.h.in']:
                 tools.replace_in_file(filename,
@@ -62,6 +77,7 @@ class ZlibConan(ConanFile):
                 tools.replace_in_file(filename,
                                       '#ifdef HAVE_STDARG_H    /* may be set to #if 1 by ./configure */',
                                       '#if defined(HAVE_STDARG_H) && (1-HAVE_STDARG_H-1 != 0)')
+            
             if self.is_emscripten():
                 tools.replace_in_file('CMakeLists.txt',
                                       'add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})',
@@ -134,6 +150,9 @@ class ZlibConan(ConanFile):
 
         # Copy the license files
         self.copy("LICENSE", src=self.ZIP_FOLDER_NAME, dst=".")
+
+        if self.is_msvc:
+            return
 
         if not tools.os_info.is_linux:
             # Copy pc file
