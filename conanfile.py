@@ -205,6 +205,7 @@ class ZlibConan(ConanFile):
             if self.options.shared:
                 os.remove('%s/_build/build/lib/libz.a'%(self.ZIP_FOLDER_NAME))
             self.copy("*", src="%s/_build/build"%(self.ZIP_FOLDER_NAME))
+            tools.replace_in_file(os.path.join(self.package_folder,"lib/pkgconfig/zlib.pc"), "-lzlib","-lz")
         else:
             if self.options.shared:
                 if self.settings.os == "Macos":
