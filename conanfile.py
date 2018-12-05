@@ -20,7 +20,7 @@ class ZlibConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]    }
     default_options = "shared=True"
-    exports_sources = ["CMakeLists.txt"]
+    exports_sources = ["CMakeLists.txt",'cmake/*']
     url = "http://github.com/conanos/zlib"
     license = "Zlib"
     description = "A Massively Spiffy Yet Delicately Unobtrusive Compression Library " \
