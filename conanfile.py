@@ -143,6 +143,8 @@ class ZlibConan(ConanFile):
                     cmake.build(build_dir=".")
 
     def package(self):
+        if tools.os_info.is_linux:
+            tools.replace_in_file(os.path.join(self.package_folder,"lib/pkgconfig/zlib.pc"), "-lzlib","-lz")
         self.output.warn("local cache: %s" % self.in_local_cache)
         self.output.warn("develop: %s" % self.develop)
         # Extract the License/s from the header to a file
