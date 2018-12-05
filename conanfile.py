@@ -1,5 +1,6 @@
 from conans import ConanFile, tools, CMake, AutoToolsBuildEnvironment
 from conans.util import files
+from conanos.build import config_scheme
 import os
 import shutil
 
@@ -18,7 +19,7 @@ class ZlibConan(ConanFile):
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]    }
-    default_options = "shared=False"
+    default_options = "shared=True"
     exports_sources = ["CMakeLists.txt"]
     url = "http://github.com/conanos/zlib"
     license = "Zlib"
@@ -42,6 +43,8 @@ class ZlibConan(ConanFile):
         if self.is_emscripten():
             del self.settings.os
             del self.settings.arch
+        
+        config_scheme(self)
 
     def source(self):
         z_name = "zlib-%s.tar.gz" % self.version
